@@ -42,64 +42,15 @@ class ActiveGameController extends ControllerWithRiotAPI
     public function store(Request $request)
     {
 
-        $id = $request->id;
-        $game_id = 0;
+        $summoner_id = $request->id;
 
-        $url = "https://na.api.pvp.net/observer-mode/rest/consumer/getSpectatorGameInfo/NA1/";
-        $url .= rawurlencode($id);
-        $url .= "?api_key=";
-        $url .= env('RIOT_API_KEY');
+        $response = $this->fetchLiveGameFromSummonerId($summoner_id);
 
+        return $response;
 
-
-        //Check headers before retrieving API response
-        $headers = get_headers($url);
-        $riot_api_response_codes = Config::get('constants.RIOT_API_RESPONSES');
-        $headers_response = $riot_api_response_codes[substr($headers[0], 9, 3)];
-
-        //If API sends 200 response, decode the contents of the response, otherwise return false.
-        if($headers_response == 'Success'){
-
-
-            $gameArray = json_decode(file_get_contents($url), true);
-
-            $gameModes = Config::get('constants.RIOT_GAME_MODES');
-            $gameTypes = Config::get('constants.RIOT_GAME_TYPES');
-
-
-            $gameType = $gameModes[$gameArray['gameMode']];
-            $gameMode = $gameTypes[$gameArray['gameType']];
-
-
-            $namespaceModel = 'App\ActiveGame'.$gameMode.$gameType;
-
-
-            $game_id = $gameArray['game_id'] = $gameArray['gameId'];
-            unset($gameArray['id']);
-            //Convert revisionDate from epoch milliseconds, to DateTime.
-            $gameArray['gameLength'] = gmdate("H:i:s", $gameArray['gameLength']);
-            $gameArray['gameStartTime'] = date("Y-m-d H:i:s", substr($gameArray['gameStartTime'], 0, 10));
-
-            $namespaceModel::create($gameArray);
-
-            foreach($gameArray['participants'] as $participant){
-
-                $summonerName = $participant['summonerName'];
-                $summonerArray = $this->getSummonerInfoFromAPI($summonerName);
-
-                //Create Summoner model from summonerArray.
-                if(!empty($summonerArray)) Summoner::create($summonerArray);
-                unset($summonerArray);
-
-            }
-
-            return 1
-                ;
-
-        }
+    }
 
         //return $namespaceModel::gameInfo();
-    }
 
     /**
      * Display the specified resource.

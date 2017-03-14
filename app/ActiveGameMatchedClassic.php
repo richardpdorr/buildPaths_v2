@@ -15,4 +15,5 @@ class ActiveGameMatchedClassic extends Model
         return $this->hasMany('App\Summoner');
 
     }
+
 }

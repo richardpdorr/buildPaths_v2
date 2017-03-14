@@ -46,10 +46,16 @@ class SummonerController extends ControllerWithRiotAPI
          */
         $summonerName = $request->name;
 
-        $summonerArray = $this->getSummonerInfoFromAPI($summonerName);
+        $response = $this->fetchSummoners($summonerName);
 
         //Create Summoner model from summonerArray.
-        if(!empty($summonerArray)) Summoner::create($summonerArray);
+        if(is_array($response)){
+
+            foreach($response as $summoner){
+                Summoner::create($summoner);
+            }
+
+        }
 
         return redirect('/summoner/'.$summonerName);
     }
@@ -62,9 +68,9 @@ class SummonerController extends ControllerWithRiotAPI
      */
     public function show($summonerName)
     {
-        $summoner = Summoner::where('name', $summonerName)->get();
+        $summoner = Summoner::where('name', $summonerName)->first();
 
-        return (count($summoner)) ? view('summoners.info')->with('summoner', $summoner) : view('summoners.info')->with('summoner', '');
+        return (count($summoner)) ? view('summoners.info')->with('summoner', $summoner) : redirect('/');
 
     }
 

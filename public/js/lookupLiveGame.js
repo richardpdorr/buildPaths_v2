@@ -1,7 +1,7 @@
 $(document).ready(function() {
     $('#liveGame').click(function () {
 
-        var decoded_json = $('<textarea />').html(json_w_html_entities).text();
+        var decoded_json = $('<textarea />').html(summoner_as_json).text();
         var obj_from_json = JSON.parse(decoded_json);
         var active_game_url = "/active/game";
 

@@ -9,4 +9,10 @@ class Summoner extends Model
     protected $table = 'summoners';
     protected $fillable = ['name', 'summoner_id', 'profileIconId', 'revisionDate', 'summonerLevel'];
 
+    public function activeGame(){
+
+        $this->belongsTo('App\ActiveGame');
+
+    }
+
 }

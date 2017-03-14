@@ -12,9 +12,11 @@ class CreateActiveGameMatchedClassicsTable extends Migration
      */
     public function up()
     {
-        Schema::create('agmc', function (Blueprint $table) {
+        Schema::create('active_games', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('game_id')->unsigned();
+            $table->string('gameMode');
+            $table->string('gameType');
             $table->time('gameLength');
             $table->dateTime('gameStartTime');
             $table->timestamps();
@@ -28,6 +30,6 @@ class CreateActiveGameMatchedClassicsTable extends Migration
      */
     public function down()
     {
-        Schema::drop('agmc');
+        Schema::drop('active_games');
     }
 }

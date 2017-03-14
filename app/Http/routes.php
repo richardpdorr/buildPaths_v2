@@ -21,19 +21,6 @@ Route::resource('/active/game', 'ActiveGameController', ['only' => ['store', 'sh
 
 Route::resource('/active/game/matched/classic', 'ActiveGameMatchedClassic', ['only' => ['show']]);
 
-Route::resource('/summoners', 'SummonerController@storeAll');
-
-//Route::get('/active/game/info/{$game_id}', function($game_id){
-//
-//   $game = \App\ActiveGameMatchedClassic::where('game_id', $game_id)->get();
-//
-//   foreach($game->summoners as $summoner){
-//
-//       return $summoner->name;
-//
-//   }
-//
-//});
 
 /*
 |--------------------------------------------------------------------------
