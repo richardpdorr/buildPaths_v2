@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 
 use App\Http\Requests;
 
-class ActiveGameMatchedClassic extends Controller
+class ChampionController extends ControllerWithRiotAPI
 {
     /**
      * Display a listing of the resource.
@@ -26,6 +26,11 @@ class ActiveGameMatchedClassic extends Controller
     public function create()
     {
         //
+
+        $this->populateChampionsIntoLocal();
+
+        return "10 champs added locally.";
+
     }
 
     /**
@@ -83,5 +88,4 @@ class ActiveGameMatchedClassic extends Controller
     {
         //
     }
-
 }

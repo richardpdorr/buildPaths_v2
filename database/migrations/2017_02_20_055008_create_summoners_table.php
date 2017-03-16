@@ -20,6 +20,7 @@ class CreateSummonersTable extends Migration
             $table->dateTime('revisionDate');
             $table->integer('summonerLevel')->unsigned();
             $table->integer('active_game_id')->unsigned()->nullable()->index();
+            $table->integer('active_champion_id')->unsigned()->nullable()->index();
             $table->timestamps();
 
         });

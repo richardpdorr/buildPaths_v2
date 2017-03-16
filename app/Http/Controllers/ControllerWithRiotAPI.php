@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\ActiveGame;
+use App\Champion;
 use App\Summoner;
 use Illuminate\Http\Request;
 
@@ -27,10 +28,10 @@ class ControllerWithRiotAPI extends Controller
             //Check headers before retrieving API response
             $headers = get_headers($url);
             $riot_api_response_codes = Config::get('constants.RIOT_API_RESPONSES');
-            $headers_response = $riot_api_response_codes[substr($headers[0], 9, 3)];
+            $response['headers'] = $riot_api_response_codes[substr($headers[0], 9, 3)];
 
             //If API sends 200 response, decode the contents of the response, otherwise return false.
-            if ($headers_response == 'Success') {
+            if ($response['headers'] == 'Success') {
 
                 $summoners_arrays = array_values(json_decode(file_get_contents($url), true));
 
@@ -43,12 +44,14 @@ class ControllerWithRiotAPI extends Controller
                     $summoners_info[] = $summoner_info;
                 }
 
+                $response['summoners'] = $summoners_info;
+
             }
         }else{
-            $headers_response = 'Summoner(s) already on local, no fetch';
+            $response['headers'] = 'Success';
         }
 
-        return (isset($summoners_info)) ? $summoners_info : $headers_response;
+        return $response;
 
         }
 
@@ -65,10 +68,10 @@ class ControllerWithRiotAPI extends Controller
         //Check headers before retrieving API response
         $headers = get_headers($url);
         $riot_api_response_codes = Config::get('constants.RIOT_API_RESPONSES');
-        $headers_response = $riot_api_response_codes[substr($headers[0], 9, 3)];
+        $response['headers'] = $riot_api_response_codes[substr($headers[0], 9, 3)];
 
         //If API sends 200 response, decode the contents of the response, otherwise return false.
-        if($headers_response == 'Success'){
+        if($response['headers'] == 'Success'){
 
             $game_array                             = json_decode(file_get_contents($url), true);
             $game_modes                             = Config::get('constants.RIOT_GAME_MODES');
@@ -90,16 +93,25 @@ class ControllerWithRiotAPI extends Controller
 
             $live_game = ActiveGame::create($game_array);
 
+            foreach($game_array['participants'] as $key => $obj){
+
+                $players[$obj['summonerName']] = $obj;
+
+            }
+
             foreach($game_array['participants'] as $participant) {
+
                     $summoner_names[] = $participant['summonerName'];
             }
                 $info_response = $this->fetchSummoners($summoner_names);
 
                 //Create Summoner model from summonerArray.
-                if(is_array($info_response))
+                if(!empty($info_response['summoners']))
                 {
                     foreach($info_response as $summoner_info) {
                         $summoner = Summoner::create($summoner_info);
+                        $active_champion = Champion::create(['champion_id' => $players[$summoner->name]['summonerId']]);
+                        $active_champion->activeSummoners()->save($summoner);
                         $summoners[] = $summoner;
                         $status[] = ['status' => 'success'];
                     }
@@ -107,16 +119,18 @@ class ControllerWithRiotAPI extends Controller
                     $status[] = ['status' => $info_response];
                 }
 
-                unset($info_response);
                 unset($summoner);
 
 
             $live_game->summoners()->saveMany($summoners);
 
-            }
-
             $response['status'] = $status;
             $response['summoners'] = $summoners;
+            $response['info_repsonse'] = $info_response;
+            $response['livegame'] = $game_array;
+            $response['players'] = $players;
+
+            }
 
             return $response;
     }
@@ -172,6 +186,41 @@ class ControllerWithRiotAPI extends Controller
 
 
         return true;
+
+    }
+
+    public function populateChampionsIntoLocal(){
+
+        $url = "https://global.api.pvp.net/api/lol/static-data/NA/v1.2/champion?champData=image,passive,stats";
+        $url .= "&api_key=";
+        $url .= env('RIOT_API_KEY');
+
+        //Check headers before retrieving API response
+        $headers = get_headers($url);
+        $riot_api_response_codes = Config::get('constants.RIOT_API_RESPONSES');
+        $response['headers'] = $riot_api_response_codes[substr($headers[0], 9, 3)];
+
+        //If API sends 200 response, decode the contents of the response, otherwise return false.
+        if($response['headers'] == 'Success') {
+
+            $champData                             = json_decode(file_get_contents($url), true)['data'];
+
+            $i=0;
+            foreach($champData as $champion){
+
+                if ($i++ > 9) break;
+                $champion_local = Champion::create();
+
+                $champion_local->champion_id = $champion['id'];
+                $champion_local->name = $champion['name'];
+                $champion_local->image_loc = $champion['passive']['image']['full'];
+
+                $champion_local->save();
+
+            }
+
+        }
+
 
     }
 }

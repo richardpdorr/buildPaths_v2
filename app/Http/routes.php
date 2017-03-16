@@ -11,15 +11,8 @@
 |
 */
 
-Route::get('/', function () {
-    return view('home');
-});
 
-Route::resource('/summoner', 'SummonerController', ['only' => ['store', 'show']]);
 
-Route::resource('/active/game', 'ActiveGameController', ['only' => ['store', 'show']]);
-
-Route::resource('/active/game/matched/classic', 'ActiveGameMatchedClassic', ['only' => ['show']]);
 
 
 /*
@@ -35,4 +28,15 @@ Route::resource('/active/game/matched/classic', 'ActiveGameMatchedClassic', ['on
 
 Route::group(['middleware' => ['web']], function () {
     //
+
+    Route::get('/', function () {
+        return view('home');
+    });
+
+    Route::resource('/summoner', 'SummonerController', ['only' => ['store', 'show']]);
+
+    Route::resource('/active/game', 'ActiveGameController', ['only' => ['store', 'show']]);
+
+    Route::resource('/admin/champions', 'ChampionController');
+
 });

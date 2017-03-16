@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 
 use App\Http\Requests;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Session;
 
 class SummonerController extends ControllerWithRiotAPI
 {
@@ -49,15 +51,24 @@ class SummonerController extends ControllerWithRiotAPI
         $response = $this->fetchSummoners($summonerName);
 
         //Create Summoner model from summonerArray.
-        if(is_array($response)){
+        if(!empty($response['summoners'])){
 
-            foreach($response as $summoner){
+            foreach($response['summoners'] as $summoner){
                 Summoner::create($summoner);
             }
 
         }
 
-        return redirect('/summoner/'.$summonerName);
+        if($response['headers'] == 'Success') {
+
+            return redirect('/summoner/'.$summonerName);
+
+        }else{
+
+            $request->session()->flash('error', 'Summoner Not Found');
+            return back();
+        }
+
     }
 
     /**

@@ -11,7 +11,13 @@ class Summoner extends Model
 
     public function activeGame(){
 
-        $this->belongsTo('App\ActiveGame');
+        return $this->belongsTo('App\ActiveGame');
+
+    }
+
+    public function activeChampion(){
+
+        return $this->belongsTo('App\Champion', 'champion_id', 'active_champion_id');
 
     }
 
